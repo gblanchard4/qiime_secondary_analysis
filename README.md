@@ -5,16 +5,16 @@ Usage: secondary_analysis.py [options]
 
 This script runs through our standard QIIME secondary analysis pipeline. The required input files are the biom, map, tre, and params.  
 
-The pipeline runs the following steps:
-Valadate the parameters file  
-Check if Qiime is loaded in the path  
-Convert the mapping file to a dictionary  
-Summarize biom table  
-Summarize taxa through plots  
-Compute/Compare Alpha Diversity    
-Compute/Compare Beta Diversity  
-Compute core microbiome 
-Compute OTU category significance  
+The pipeline runs the following steps:  
+* Valadate the parameters file  
+* Check if Qiime is loaded in the path  
+* Convert the mapping file to a dictionary  
+* Summarize biom table  
+* Summarize taxa through plots  
+* Compute/Compare Alpha Diversity  
+* Compute/Compare Beta Diversity  
+* Compute core microbiome  
+* Compute OTU category significance  
 
 
 ###Arguments:
