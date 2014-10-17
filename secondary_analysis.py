@@ -19,7 +19,7 @@ Python secondary analysis script
 This script takes the basic primary analysis files (biom, map, tre, params) and runs the SOP commands
 
 TODO:
-Needs MOAR comments
+Needs comments
 '''
 
 # Validate that the parameters file has all the values needed
@@ -89,7 +89,7 @@ def qiime17_otu_category_sig(biom, mapfile, categories, log):
 	tests = ['g_test', 'ANOVA']
 	temp_stamp = str(int(time.time()))
 	with open('otu_category_significance_batch_'+temp_stamp, 'w') as batch:
-		batch.write('#!/bin/bash\n. /opt/qiime17/activate.sh\n')
+		batch.write('#!/bin/bash\n. sh /media/nfs_opt/qiime17/activate.sh\n')
 		for category in categories:
 			for test in tests:
 				otu_cat_sig_command = "otu_category_significance.py -i %s -m %s -c %s -s %s -o taxa_summary/taxa_%s/%s.txt&" % (biom, mapfile, category, test, category, test)
