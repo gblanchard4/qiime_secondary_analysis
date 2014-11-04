@@ -4,7 +4,8 @@ __author__ = "Gene Blanchard"
 __email__ = "me@geneblanchard.com"
 
 # Imports
-from optparse import OptionParser
+import argparse
+#from optparse import OptionParser
 import sys
 import subprocess
 import os
@@ -18,8 +19,6 @@ Python secondary analysis script
 
 This script takes the basic primary analysis files (biom, map, tre, params) and runs the SOP commands
 
-TODO:
-Needs comments
 '''
 
 # Validate that the parameters file has all the values needed
@@ -185,51 +184,30 @@ def main():
 	# Set current working directory
 	cwd = os.getcwd()
 
-	# Create the options parser
-	parser = OptionParser()
-	
+	# Create the argument parser
+	parser = argparse.ArgumentParser(description="Need description")
+
 	#biom -b --biom
-	parser.add_option("-b", "--biom", action="store", type="string", dest="biom", help="The biom file")
+	parser.add_argument("-b", "--biom", dest="biom", required=True, help="The biom file")
 	#map -m --map
-	parser.add_option("-m", "--map", action="store", type="string", dest="map", help="The mapping file")
+	parser.add_argument("-m", "--map", dest="map", required=True, help="The mapping file")
 	#parameters -p --params
-	parser.add_option("-p", "--params", action="store", type="string", dest="params", help="The parameters file")
+	parser.add_argument("-p", "--params", dest="params", required=True, help="The parameters file")
 	#tre -t --tre
-	parser.add_option("-t", "--tre", action="store", type="string", dest="tre", help="The tre file")
+	parser.add_argument("-t", "--tre", dest="tre", required=True, help="The tre file")
 	#categories -c --categories
-	parser.add_option("-c", "--categories", action="store", type="string", dest="categories", help="The metadata categories to compute. Must be colon seperated")
+	parser.add_argument("-c", "--categories", dest="categories", help="The metadata categories to compute. Must be colon seperated")
 
-	# Grab command line options
-	(options, args) = parser.parse_args()
+	# Parse the arguments
+	args = parser.parse_args()
 
-	# Assign (and check) command line arguments
-	ASSIGN_ERROR = False
-	CATEGORIES = False
-	try:
-		if options.biom == None:
-			ASSIGN_ERROR = True
-			print "You need to enter a biom file. Use the -h option for more information"
-		elif options.map == None:
-			ASSIGN_ERROR = True
-			print "You need to enter a mapping file. Use the -h option for more information"
-		elif options.params == None:
-			ASSIGN_ERROR = True
-			print "You need to enter a parameters file. Use the -h option for more information."
-		elif options.tre == None:
-			ASSIGN_ERROR = True
-			print "You need to enter a tree file. Use the -h option for more information"
-	except NameError:
-		sys.exit()
-		
-	if ASSIGN_ERROR ==  True:
-		sys.exit()
+	# Assign variables
+	biom_file = args.biom
+	mapping_file = args.map
+	params_file = args.params
+	tre_file =  args.tre
 
-	# Arguments passed, assign them to variables
-	biom_file = options.biom
-	mapping_file = options.map
-	params_file = options.params
-	tre_file =  options.tre
-
+	# <><><><><><><><><><><><><
 	categories_dictionary = map_to_dictionary(mapping_file)
 
 	if not options.categories == None:
