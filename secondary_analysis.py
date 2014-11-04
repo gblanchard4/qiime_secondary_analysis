@@ -44,7 +44,7 @@ def check_qiime(log):
 		print "Qiime is not loaded into your path"
 		sys.exit()
 
-# Convert the map file to a dictionary 
+# Convert the map file to a dictionary, removing default categories
 def map_to_dictionary(mapfile):
 	dictionary =  dict()
 	with open(mapfile, "rb") as map_handle:
@@ -207,8 +207,11 @@ def main():
 	params_file = args.params
 	tre_file =  args.tre
 
-	# <><><><><><><><><><><><><
+	# Read the mapping file into a dictionary
+	# The key is the column header (category)
 	categories_dictionary = map_to_dictionary(mapping_file)
+
+
 
 	if not options.categories == None:
 		categories = []
