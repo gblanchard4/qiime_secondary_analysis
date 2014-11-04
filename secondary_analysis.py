@@ -70,19 +70,19 @@ def create_biom_summary(biom_file, log):
 	biom_proc = subprocess.Popen(command.split(' '))
 	biom_proc.wait()
 
-# Get the metadata columns 
-def read_mapfile_metadata(map_file):
-	with open(map_file, 'r') as mapping_file:
-		categories = mapping_file.readline()
-	metadata_categories = categories.rstrip('\n').split('\t')
-	try:
-		metadata_categories.remove('#SampleID')
-		metadata_categories.remove('Description')
-		metadata_categories.remove('BarcodeSequence')
-		metadata_categories.remove('LinkerPrimerSequence')
-	except ValueError:
-		pass
-	return metadata_categories
+# # Get the metadata columns 
+# def read_mapfile_metadata(map_file):
+# 	with open(map_file, 'r') as mapping_file:
+# 		categories = mapping_file.readline()
+# 	metadata_categories = categories.rstrip('\n').split('\t')
+# 	try:
+# 		metadata_categories.remove('#SampleID')
+# 		metadata_categories.remove('Description')
+# 		metadata_categories.remove('BarcodeSequence')
+# 		metadata_categories.remove('LinkerPrimerSequence')
+# 	except ValueError:
+# 		pass
+# 	return metadata_categories
 
 def qiime17_otu_category_sig(biom, mapfile, categories, log):
 	tests = ['g_test', 'ANOVA']
@@ -210,22 +210,20 @@ def main():
 	# Read the mapping file into a dictionary
 	# The key is the column header (category)
 	categories_dictionary = map_to_dictionary(mapping_file)
-
-
-
-	if not options.categories == None:
+	# Check if the user has inputed their own categories
+	# If no categories have been selected, use all categories in the categories_dictionary
+	if args.categories == None:
+		categories = categories_dictionary.keys()
+	# User selected categories
+	else:
 		categories = []
-		input_categories = options.categories.split(':')
-		expected_categories = read_mapfile_metadata(mapping_file)
-		for category in input_categories:
-			if category in expected_categories:
+		# Split the categories into list and make sure they are valid
+		for category in args.categories.split(':'):
+			if category in categories_dictionary.keys():
 				categories.append(category)
 			else:
 				print "ERROR: %s not found in mapping file, ommiting\n" % category
-		
-		#CATEGORIES = True
-	else:
-		categories = read_mapfile_metadata(mapping_file)
+
 
 	time_stamp = str(int(time.time()))
 	logfile = 'secondary_batch_%s.log' % time_stamp
