@@ -5,10 +5,9 @@ __email__ = "me@geneblanchard.com"
 
 # Imports
 import argparse
-#from optparse import OptionParser
+import os
 import sys
 import subprocess
-import os
 import time
 import datetime
 import csv
@@ -20,21 +19,6 @@ Python secondary analysis script
 This script takes the basic primary analysis files (biom, map, tre, params) and runs the SOP commands
 
 '''
-
-# Validate that the parameters file has all the values needed
-def valid_params(params_file):
-	required_values =['summarize_taxa:level','plot_taxa_summary:labels','alpha_diversity:metrics','multiple_rarefactions:min','multiple_rarefactions:max','multiple_rarefactions:step','beta_diversity_through_plots:seqs_per_sample']
-	found_values = []
-	with open(params_file, 'r') as params:
-		for line in params:
-			value = line.split(' ')[0]
-			found_values.append(value)
-	for required in required_values:
-		if required not in found_values:
-			print required+" not found in parameters file.\n"
-			print "\nI.E.:\nsummarize_taxa:level 2,3,4,5,6,7\nplot_taxa_summary:labels Phylum,Class,Order,Family,Genus,Species\nalpha_diversity:metrics shannon,simpson,PD_whole_tree,chao1,observed_species\nmultiple_rarefactions:min 100\nmultiple_rarefactions:max 18000\nmultiple_rarefactions:step 500\nbeta_diversity_through_plots:seqs_per_sample 18000\n"
-			sys.exit()
-
 # Function to make sure qiime is loaded in the PATH
 def check_qiime(log):
 	try:
@@ -70,25 +54,12 @@ def create_biom_summary(biom_file, log):
 	biom_proc = subprocess.Popen(command.split(' '))
 	biom_proc.wait()
 
-# # Get the metadata columns 
-# def read_mapfile_metadata(map_file):
-# 	with open(map_file, 'r') as mapping_file:
-# 		categories = mapping_file.readline()
-# 	metadata_categories = categories.rstrip('\n').split('\t')
-# 	try:
-# 		metadata_categories.remove('#SampleID')
-# 		metadata_categories.remove('Description')
-# 		metadata_categories.remove('BarcodeSequence')
-# 		metadata_categories.remove('LinkerPrimerSequence')
-# 	except ValueError:
-# 		pass
-# 	return metadata_categories
 
 def qiime17_otu_category_sig(biom, mapfile, categories, log):
 	tests = ['g_test', 'ANOVA']
 	temp_stamp = str(int(time.time()))
 	with open('otu_category_significance_batch_'+temp_stamp, 'w') as batch:
-		batch.write('#!/bin/bash\n. sh /media/nfs_opt/qiime17/activate.sh\n')
+		batch.write('#!/bin/bash\nsource /media/nfs_opt/qiime17/activate.sh\n')
 		for category in categories:
 			for test in tests:
 				otu_cat_sig_command = "otu_category_significance.py -i %s -m %s -c %s -s %s -o taxa_summary/taxa_%s/%s.txt&" % (biom, mapfile, category, test, category, test)
@@ -187,16 +158,22 @@ def main():
 	# Create the argument parser
 	parser = argparse.ArgumentParser(description="Need description")
 
-	#biom -b --biom
+	# biom -b --biom
 	parser.add_argument("-b", "--biom", dest="biom", required=True, help="The biom file")
-	#map -m --map
+	# map -m --map
 	parser.add_argument("-m", "--map", dest="map", required=True, help="The mapping file")
-	#parameters -p --params
+	# parameters -p --params
 	parser.add_argument("-p", "--params", dest="params", required=True, help="The parameters file")
-	#tre -t --tre
+	# tre -t --tre
 	parser.add_argument("-t", "--tre", dest="tre", required=True, help="The tre file")
-	#categories -c --categories
+	# categories -c --categories
 	parser.add_argument("-c", "--categories", dest="categories", help="The metadata categories to compute. Must be colon seperated")
+	# output -o --output
+	parser.add_argument("-o", "--output", dest="output_dir", default=os.getcwd(), help="The output directory. DEFAULT: Current working directory")
+	# Qiime 1.7 --qiime17
+	parser.add_argument("--qiime17", dest="qiime17", default="/media/nfs_opt/qiime17/activate.sh", help="The path to the Qiime 1.7 activate.sh or alias")
+	# Qiime 1.8 --qiime18
+	parser.add_argument("--qiime18", dest="qiime18", default="/media/nfs_opt/qiime18/activate.sh", help="The path to the Qiime 1.8 activate.sh or alias")
 
 	# Parse the arguments
 	args = parser.parse_args()
@@ -206,6 +183,30 @@ def main():
 	mapping_file = args.map
 	params_file = args.params
 	tre_file =  args.tre
+	qiime18 =  args.qiime18
+	qiime17 = args.qiime17 
+
+	# Make sure a valid parameters file has been input
+	required_values =['summarize_taxa:level','plot_taxa_summary:labels','alpha_diversity:metrics','multiple_rarefactions:min','multiple_rarefactions:max','multiple_rarefactions:step','beta_diversity_through_plots:seqs_per_sample']
+	found_values = []
+	with open(params_file, 'r') as params:
+		for line in params:
+			value = line.split(' ')[0]
+			found_values.append(value)
+	for required in required_values:
+		if required not in found_values:
+			print required+" not found in parameters file.\n"
+			print "\nI.E.:\nsummarize_taxa:level 2,3,4,5,6,7\nplot_taxa_summary:labels Phylum,Class,Order,Family,Genus,Species\nalpha_diversity:metrics shannon,simpson,PD_whole_tree,chao1,observed_species\nmultiple_rarefactions:min 100\nmultiple_rarefactions:max 18000\nmultiple_rarefactions:step 500\nbeta_diversity_through_plots:seqs_per_sample 18000\n"
+			sys.exit()
+	valid_params = """
+summarize_taxa:level 2,3,4,5,6,7
+plot_taxa_summary:labels Phylum,Class,Order,Family,Genus,Species
+alpha_diversity:metrics shannon,simpson,PD_whole_tree,chao1,observed_species
+multiple_rarefactions:min 100
+multiple_rarefactions:max 18000
+multiple_rarefactions:step 500
+beta_diversity_through_plots:seqs_per_sample 18000
+"""
 
 	# Read the mapping file into a dictionary
 	# The key is the column header (category)
@@ -224,32 +225,42 @@ def main():
 			else:
 				print "ERROR: %s not found in mapping file, ommiting\n" % category
 
+	# Check Qiime paths (Make sure we get a '0' return code when calling
+	# Qiime 18
+	if subprocess.check_call(["sh",qiime18]) == 0:
+		pass
+	else:
+		print "Check your Qiime 1.8 path. Non-zero return code returned when trying to source it."
+		print "Path:\t{}".format(qiime18)
+	# Qiime 17
+	if subprocess.check_call(["sh",qiime17]) == 0:
+		pass
+	else:
+		print "Check your Qiime 1.7 path. Non-zero return code returned when trying to source it."
+		print "Path:\t{}".format(qiime17)
+
+	# Command lists
+	qiime18_command_list = ["source {};".format(qiime18)]
+	qiime17_command_list = ["source {};".format(qiime17)]
+
 
 	time_stamp = str(int(time.time()))
 	logfile = 'secondary_batch_%s.log' % time_stamp
 
+	
 	with open(logfile, 'w') as log:
 
 		# Print Categories
 		log.write("Categories:"+str(categories)+'\n')
 		
-		# Validate Parameters
-		start = time.time()
-		log.write("Validate Parameters\t"+get_time())
-		valid_params(params_file)
-		elapsed = time.time() - start
-		hms_elapsed = "Elapsed {}\n\n".format(hms_string(elapsed))
-		log.write(hms_elapsed)
-		log.flush()
-		
 		# Check qiime in path
-		start = time.time()
-		log.write("Check if Qiime is in $PATH\t"+get_time())
-		check_qiime(log)
-		elapsed = time.time() - start
-		hms_elapsed = "Elapsed {}\n\n".format(hms_string(elapsed))
-		log.write(hms_elapsed)
-		log.flush()
+		# start = time.time()
+		# log.write("Check if Qiime is in $PATH\t"+get_time())
+		# check_qiime(log)
+		# elapsed = time.time() - start
+		# hms_elapsed = "Elapsed {}\n\n".format(hms_string(elapsed))
+		# log.write(hms_elapsed)
+		# log.flush()		
 		
 		# Summarize BIOM table
 		start = time.time()
