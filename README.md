@@ -1,15 +1,29 @@
 #qiime_secondary_analysis  
 
-The script expects both qiime 1.7 and 1.8 to be install. This script uses our convention of qiime17/qiime18 to load them into the path. 
-
-## To Do:
-More documentation and fix qiime paths
+The script expects both qiime 1.7 and 1.8 to be install. This script uses our convention of qiime17/qiime18 to load them into the path.
   
-##A meta script to take care of the Qiime secondary analysis  
-Usage: secondary_analysis.py [options]
+## Help:
+```
+usage: secondary_analysis.py [-h] -b BIOM -m MAP -p PARAMS -t TRE
+                             [-c CATEGORIES] [--qiime17 QIIME17]
+                             [--qiime18 QIIME18]
 
-This script runs through our standard QIIME secondary analysis pipeline. The required input files are the biom, map, tre, and params.  
+This script runs through a standard QIIME secondary analysis pipeline. The
+required input files are the biom, map, tre, and params.
 
+optional arguments:
+  -h, --help            show this help message and exit
+  -b BIOM, --biom BIOM  The biom file
+  -m MAP, --map MAP     The mapping file
+  -p PARAMS, --params PARAMS
+                        The parameters file
+  -t TRE, --tre TRE     The tre file
+  -c CATEGORIES, --categories CATEGORIES
+                        The metadata categories to compute. Must be colon
+                        seperated
+  --qiime17 QIIME17     The path to the Qiime 1.7 activate.sh or alias
+  --qiime18 QIIME18     The path to the Qiime 1.8 activate.sh or alias
+```
 
 The pipeline runs the following steps:  
 * Valadate the parameters file  
@@ -20,24 +34,8 @@ The pipeline runs the following steps:
 * Compute/Compare Alpha Diversity  
 * Compute/Compare Beta Diversity  
 * Compute core microbiome  
-* Compute OTU category significance  
+* Compute OTU category significance  (Qiime 1.7)
 
-
-## Arguments:
-These are the available command line arguments  
-* `h, --help`  
-	* Show this help message and exit  
-* `-b BIOM, --biom=BIOM`
-	* The biom file  
-* `-m MAP, --map=MAP`
-	* The mapping file  
-* `-p PARAMS, --params=PARAMS`
-	* The parameters file  
-* `-t TRE, --tre=TRE`
-	* The tre file  
-* `-c CATEGORIES, --categories=CATEGORIES`
-	* The metadata categories to compute. Must be colon seperated  
-
-
-
-
+## Output:
+Output is written to the current working directory. 
+A batch file for the Qiime 1.7/1.8 commands is created and run. 
