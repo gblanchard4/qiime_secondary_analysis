@@ -122,7 +122,7 @@ def main():
 	cwd = os.getcwd()
 
 	# Create the argument parser
-	parser = argparse.ArgumentParser(description="Need description")
+	parser = argparse.ArgumentParser(description="This script runs through a standard QIIME secondary analysis pipeline. The required input files are the biom, map, tre, and params. ")
 
 	# biom -b --biom
 	parser.add_argument("-b", "--biom", dest="biom", required=True, help="The biom file")
@@ -135,7 +135,7 @@ def main():
 	# categories -c --categories
 	parser.add_argument("-c", "--categories", dest="categories", help="The metadata categories to compute. Must be colon seperated")
 	# output -o --output
-	parser.add_argument("-o", "--output", dest="output_dir", default=os.getcwd(), help="The output directory. DEFAULT: Current working directory")
+	#parser.add_argument("-o", "--output", dest="output_dir", default=os.getcwd(), help="The output directory. DEFAULT: Current working directory")
 	# Qiime 1.7 --qiime17
 	parser.add_argument("--qiime17", dest="qiime17", default="/media/nfs_opt/qiime17/activate.sh", help="The path to the Qiime 1.7 activate.sh or alias")
 	# Qiime 1.8 --qiime18
