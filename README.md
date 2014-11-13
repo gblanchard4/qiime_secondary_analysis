@@ -38,17 +38,16 @@ The pipeline runs the following steps:
 
 The Qiime scripts run are:
 * `source qiime18_path`
-* `print_biom_table_summary.py`
-* `mkdir taxa_summary/`
-* `summarize_taxa_through_plots.py`
-* `alpha_rarefaction.py`
-* `compare_alpha_diversity.py`
-* `beta_diversity_through_plots.py`
-* `make_2d_plots.py`
-* `compare_categories.py`
-* `compute_core_microbiome.py`
+* [`print_biom_table_summary.py`](http://biom-format.org/documentation/summarizing_biom_tables.html)
+* [`summarize_taxa_through_plots.py`](http://qiime.org/scripts/summarize_taxa_through_plots.html)
+* [`alpha_rarefaction.py`](http://qiime.org/scripts/alpha_rarefaction.html)
+* [`compare_alpha_diversity.py`](http://qiime.org/scripts/compare_alpha_diversity.html)
+* [`beta_diversity_through_plots.py`](http://qiime.org/scripts/beta_diversity_through_plots.html)
+* [`make_2d_plots.py`](http://qiime.org/scripts/make_2d_plots.html)
+* [`compare_categories.py`](http://qiime.org/scripts/compare_categories.html)
+* [`compute_core_microbiome.py`](http://qiime.org/scripts/compute_core_microbiome.html)
 * `source qiime17_path`
-* `otu_category_significance.py`
+* [`otu_category_significance.py`](http://qiime.org/1.7.0/scripts/otu_category_significance.html)
 
 ## Output:
 Output is written to the current working directory. 
