@@ -24,7 +24,7 @@ optional arguments:
   --qiime17 QIIME17     The path to the Qiime 1.7 activate.sh or alias
   --qiime18 QIIME18     The path to the Qiime 1.8 activate.sh or alias
 ```
-
+## Workflow
 The pipeline runs the following steps:  
 * Valadate the parameters file  
 * Check if Qiime is loaded in the path  
@@ -36,6 +36,21 @@ The pipeline runs the following steps:
 * Compute core microbiome  
 * Compute OTU category significance  (Qiime 1.7)
 
+The Qiime scripts run are:
+* `source qiime18_path`
+* `print_biom_table_summary.py`
+* `mkdir taxa_summary/`
+* `summarize_taxa_through_plots.py`
+* `alpha_rarefaction.py`
+* `compare_alpha_diversity.py`
+* `beta_diversity_through_plots.py`
+* `make_2d_plots.py`
+* `compare_categories.py`
+* `compute_core_microbiome.py`
+* `source qiime17_path`
+* `otu_category_significance.py`
+
 ## Output:
 Output is written to the current working directory. 
 A batch file for the Qiime 1.7/1.8 commands is created and run. 
+
