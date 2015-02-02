@@ -140,7 +140,8 @@ def main():
 	parser.add_argument("--qiime17", dest="qiime17", default="/media/nfs_opt/qiime17/activate.sh", help="The path to the Qiime 1.7 activate.sh or alias")
 	# Qiime 1.8 --qiime18
 	parser.add_argument("--qiime18", dest="qiime18", default="/media/nfs_opt/qiime18/activate.sh", help="The path to the Qiime 1.8 activate.sh or alias")
-
+	# list params -l --list
+	parser.add_argument("-l". "--list", dest="listparams", action="store_true", help="List a params file example")
 	# Parse the arguments
 	args = parser.parse_args()
 
@@ -150,7 +151,21 @@ def main():
 	params_file = args.params
 	tre_file =  args.tre
 	qiime18_source =  args.qiime18
-	qiime17_source = args.qiime17 
+	qiime17_source = args.qiime17
+	listparams = args.listparams
+
+	# List parameters if requested
+	if listparams:
+		print """
+summarize_taxa:level 2,3,4,5,6,7
+plot_taxa_summary:labels Phylum,Class,Order,Family,Genus,Species
+alpha_diversity:metrics shannon,simpson,PD_whole_tree,chao1,observed_species
+multiple_rarefactions:min 100
+multiple_rarefactions:max 18000
+multiple_rarefactions:step 500
+beta_diversity_through_plots:seqs_per_sample 18000
+"""
+
 
 	# Make sure a valid parameters file has been input
 	required_values =['summarize_taxa:level','plot_taxa_summary:labels','alpha_diversity:metrics','multiple_rarefactions:min','multiple_rarefactions:max','multiple_rarefactions:step','beta_diversity_through_plots:seqs_per_sample']
@@ -243,4 +258,3 @@ beta_diversity_through_plots:seqs_per_sample 18000
 
 if __name__ == "__main__":
 	main()
-
