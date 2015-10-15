@@ -19,7 +19,8 @@ Python secondary analysis script
 This script takes the basic primary analysis files (biom, map, tre, params) and runs the SOP commands
 
 TODO:
-
+Processors
+qiime17/18 shell scripts instead of all the individual Popens
 
 '''
 # Function to make sure qiime is loaded in the PATH
@@ -50,20 +51,9 @@ def map_to_dictionary(mapfile):
 		pass
 	return dictionary
 
-#>> Qiime 1.7
-
-def qiime17_otu_category_sig(biom, mapfile, categories, batch):
-	tests = ['g_test', 'ANOVA']
-	for category in categories:
-		for test in tests:
-			otu_cat_sig_command = "otu_category_significance.py -i {} -m {} -c {} -s {} -o taxa_summary/taxa_{}/{}.txt".format(biom, mapfile, category, test, category, test)
-			batch.write(otu_cat_sig_command+'\n')
-
-#>> Qiime 1.8
-
 # Save the biom table stats to a file 
 def create_biom_summary(biom_file, batch):
-	command = "biom summarize-table -i {} -o table_summary.txt".format(biom_file)
+	command = "print_biom_table_summary.py -i {} -o table_summary.txt".format(biom_file)
 	batch.write(command+'\n')
 
 def summarize_taxa(biom, mapfile, params, categories, batch):
@@ -110,19 +100,12 @@ def compute_core_microbiome(biom, mapfile, categories, batch):
 			core_microbiome_command = "compute_core_microbiome.py -i {} --mapping_fp {} --num_fraction_for_core_steps 6 -o core_microbiome/core_microbiome_{}_{} --valid_states {}:{}".format(biom, mapfile, category, state, category, state)
 			batch.write(core_microbiome_command+'\n')
 			
-#>> Qiime 1.9 
-
-def qiime19_group_sig(biom, mapfile, categories, batch):
-	tests = ['spearman', 'pearson', 'kendall', 'cscore']
+def qiime17_otu_category_sig(biom, mapfile, categories, batch):
+	tests = ['g_test', 'ANOVA']
 	for category in categories:
 		for test in tests:
-			otu_cat_sig_command = "observation_metadata_correlation.py -i {} -m {} -c {} -s {} -o taxa_summary/taxa_{}/{}.txt".format(biom, mapfile, category, test, category, test)
+			otu_cat_sig_command = "otu_category_significance.py -i {} -m {} -c {} -s {} -o taxa_summary/taxa_{}/{}.txt".format(biom, mapfile, category, test, category, test)
 			batch.write(otu_cat_sig_command+'\n')
-
-
-
-def make_otu_heatmap(biom, mapfile, categories, batch):
-	return None
 
 def get_time():
 	now = datetime.datetime.now().ctime()
@@ -151,17 +134,14 @@ def main():
 	parser.add_argument("-t", "--tre", dest="tre", required=True, help="The tre file")
 	# categories -c --categories
 	parser.add_argument("-c", "--categories", dest="categories", help="The metadata categories to compute. Must be colon seperated")
+	# categories -c --categories
+	parser.add_argument("--commands", dest="commands", action="store_true", help="Write commands here")
 	# output -o --output
-	#parser.add_argument("-o", "--output", dest="output_dir", default=os.getcwd(), help="The output directory. DEFAULT: Current working directory")
-	# list params -l --list
-	parser.add_argument("-l", "--list", dest="listparams", action="store_true", help="List a params file example")
-	
+	# parser.add_argument("-o", "--output", dest="output_dir", default=os.getcwd(), help="The output directory to write commands to ")
 	# Qiime 1.7 --qiime17
 	parser.add_argument("--qiime17", dest="qiime17", default="/media/nfs_opt/qiime17/activate.sh", help="The path to the Qiime 1.7 activate.sh or alias")
 	# Qiime 1.8 --qiime18
 	parser.add_argument("--qiime18", dest="qiime18", default="/media/nfs_opt/qiime18/activate.sh", help="The path to the Qiime 1.8 activate.sh or alias")
-	# Qiime 1.9 --qiime19
-	parser.add_argument("--qiime19", dest="qiime19", default="/media/nfs_opt/qiime19/activate.sh", help="The path to the Qiime 1.9 activate.sh or alias")
 
 	# Parse the arguments
 	args = parser.parse_args()
@@ -171,13 +151,10 @@ def main():
 	mapping_file = args.map
 	params_file = args.params
 	tre_file =  args.tre
-	listparams = args.listparams
-	# Qiimez
 	qiime18_source =  args.qiime18
-	qiime17_source = args.qiime17
-	qiime19_source = args.qiime19
+	qiime17_source = args.qiime17 
+	commands =  args.commands
 
-	# Params string
 	valid_params = """
 summarize_taxa:level 2,3,4,5,6,7
 plot_taxa_summary:labels Phylum,Class,Order,Family,Genus,Species
@@ -187,11 +164,6 @@ multiple_rarefactions:max 18000
 multiple_rarefactions:step 500
 beta_diversity_through_plots:seqs_per_sample 18000
 """
-
-	# List parameters if requested
-	if listparams:
-		print valid_params
-		sys.exit()
 
 	# Make sure a valid parameters file has been input
 	required_values =['summarize_taxa:level','plot_taxa_summary:labels','alpha_diversity:metrics','multiple_rarefactions:min','multiple_rarefactions:max','multiple_rarefactions:step','beta_diversity_through_plots:seqs_per_sample']
@@ -205,7 +177,7 @@ beta_diversity_through_plots:seqs_per_sample 18000
 			print required+" not found in parameters file.\n"
 			print valid_params
 			sys.exit()
-	valid_params = valid_params
+
 
 	# Read the mapping file into a dictionary
 	# The key is the column header (category)
@@ -224,46 +196,81 @@ beta_diversity_through_plots:seqs_per_sample 18000
 			else:
 				print "ERROR: %s not found in mapping file, ommiting\n" % category
 
-	with open('qiime19.sh', 'w') as qiime19:
-		# Source the enviroment
-		#qiime19.write("#!/bin/bash\nsource {};\n".format(qiime19_source))
-		# Biom table summary
-		create_biom_summary(biom_file, qiime19)	
-		# Mkdir Taxa summary <<<<<<<<<<
-		qiime19.write("mkdir taxa_summary/\n")
-		# Taxa summary commands
-		summarize_taxa(biom_file, mapping_file, params_file, categories, qiime19)
-		# Alpha div
-		alpha_diversity(biom_file, mapping_file, params_file, tre_file, qiime19)
-		# Alpha div colated
-		compare_alpha_diversity(mapping_file, categories, qiime19)
-		# Beta diversity
-		beta_diversity(biom_file, mapping_file, tre_file, qiime19)
-		# Comapre categories 
-		compare_beta(mapping_file, categories, qiime19)
-		# Core microbiome
-		qiime19.write("mkdir core_microbiome/\n")
-		compute_core_microbiome(biom_file, mapping_file, categories, qiime19)
-		# OTU Category Sig
-		qiime19_group_sig(biom_file, mapping_file, categories, qiime19)
-		# Deactivate
-		qiime19.write('deactivate')
-
+	# Check Qiime paths (Make sure we get a '0' return code when calling
+	# Qiime 18
+	if subprocess.check_call(["sh",qiime18_source]) == 0:
+		pass
+	else:
+		print "Check your Qiime 1.8 path. Non-zero return code returned when trying to source it."
+		print "Path:\t{}".format(qiime18_source)
 	# Qiime 17
-	with open('qiime17.sh', 'w') as qiime17:
-		# Source the enviroment
-		qiime17.write("#!/bin/bash\nsource {};\n".format(qiime17_source))
-		# OTU Category Sig
-		qiime17_otu_category_sig(biom_file, mapping_file, categories, qiime17)
+	if subprocess.check_call(["sh",qiime17_source]) == 0:
+		pass
+	else:
+		print "Check your Qiime 1.7 path. Non-zero return code returned when trying to source it."
+		print "Path:\t{}".format(qiime17_source)
+
+	# Command lists
+	if commands:
+		# Qiime18
+		with open('qiime19.sh'.format(commands), 'w') as qiime18:
+			# Mkdir Taxa summary <<<<<<<<<<
+			qiime18.write("mkdir taxa_summary/\n")
+			# Taxa summary commands
+			summarize_taxa(biom_file, mapping_file, params_file, categories, qiime18)
+			# Alpha div
+			alpha_diversity(biom_file, mapping_file, params_file, tre_file, qiime18)
+			# Alpha div colated
+			compare_alpha_diversity(mapping_file, categories, qiime18)
+			# Beta diversity
+			beta_diversity(biom_file, mapping_file, tre_file, qiime18)
+			# Comapre categories 
+			compare_beta(mapping_file, categories, qiime18)
+			# Core microbiome
+			qiime18.write("mkdir core_microbiome/\n")
+			compute_core_microbiome(biom_file, mapping_file, categories, qiime18)
+		# Qiime 17
+		with open('qiime17.sh'.format(commands), 'w') as qiime17:
+			# Source the enviroment
+			qiime17.write("#!/bin/bash\nsource {};\n".format(qiime17_source))
+			# OTU Category Sig
+			qiime17_otu_category_sig(biom_file, mapping_file, categories, qiime17)
 
 
-	# # Run qiime18 commands
-	# qiime19_proc = subprocess.Popen("./qiime19.sh", shell=True)
-	# qiime19_proc.wait()
-	# # qiime18_proc = subprocess.Popen("./qiime18.sh", shell=True)
-	# # qiime18_proc.wait()
-	# qiime17_proc = subprocess.Popen("./qiime17.sh", shell=True)
-	# qiime17_proc.wait()
+	else:
+		# Qiime18
+		with open('qiime19.sh', 'w') as qiime18:
+			# Source the enviroment
+			qiime18.write("#!/bin/bash\nsource {};\n".format(qiime18_source))
+			# Biom table summary
+			create_biom_summary(biom_file, qiime18)	
+			# Mkdir Taxa summary <<<<<<<<<<
+			qiime18.write("mkdir taxa_summary/\n")
+			# Taxa summary commands
+			summarize_taxa(biom_file, mapping_file, params_file, categories, qiime18)
+			# Alpha div
+			alpha_diversity(biom_file, mapping_file, params_file, tre_file, qiime18)
+			# Alpha div colated
+			compare_alpha_diversity(mapping_file, categories, qiime18)
+			# Beta diversity
+			beta_diversity(biom_file, mapping_file, tre_file, qiime18)
+			# Comapre categories 
+			compare_beta(mapping_file, categories, qiime18)
+			# Core microbiome
+			qiime18.write("mkdir core_microbiome/\n")
+			compute_core_microbiome(biom_file, mapping_file, categories, qiime18)
+		# Qiime 17
+		with open('qiime17.sh', 'w') as qiime17:
+			# Source the enviroment
+			qiime17.write("#!/bin/bash\nsource {};\n".format(qiime17_source))
+			# OTU Category Sig
+			qiime17_otu_category_sig(biom_file, mapping_file, categories, qiime17)
+	
+		# Run qiime18 commands
+		qiime18_proc = subprocess.Popen("./qiime18.sh", shell=True)
+		qiime18_proc.wait()
+		qiime17_proc = subprocess.Popen("./qiime17.sh", shell=True)
+		qiime17_proc.wait()
 
 if __name__ == "__main__":
 	main()

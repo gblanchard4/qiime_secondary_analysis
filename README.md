@@ -1,6 +1,8 @@
-#qiime_secondary_analysis  
+#Qiime Secondary Analysis  
 
-The script expects both qiime 1.7 and 1.8 to be install. This script uses our convention of qiime17/qiime18 to load them into the path.
+The script expects Qiime 1.7, 1.8, & 1.9 to be installed. 
+I have an alias to each Qiime install's `activate.sh`, these are qiime17, qiime18, and qiime19. 
+You can pass the path to the activate file with the 
   
 ## Help:
 ```
@@ -21,8 +23,10 @@ optional arguments:
   -c CATEGORIES, --categories CATEGORIES
                         The metadata categories to compute. Must be colon
                         seperated
+  --commands            Just write commands, don't run                        
   --qiime17 QIIME17     The path to the Qiime 1.7 activate.sh or alias
   --qiime18 QIIME18     The path to the Qiime 1.8 activate.sh or alias
+  --qiime19 QIIME19     The path to the Qiime 1.9 activate.sh or alias
 ```
 ## Workflow
 The pipeline runs the following steps:  
