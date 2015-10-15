@@ -134,8 +134,10 @@ def main():
 	parser.add_argument("-t", "--tre", dest="tre", required=True, help="The tre file")
 	# categories -c --categories
 	parser.add_argument("-c", "--categories", dest="categories", help="The metadata categories to compute. Must be colon seperated")
+	# categories -c --categories
+	parser.add_argument("--commands", dest="commands", action="store_true", help="Write commands here")
 	# output -o --output
-	#parser.add_argument("-o", "--output", dest="output_dir", default=os.getcwd(), help="The output directory. DEFAULT: Current working directory")
+	# parser.add_argument("-o", "--output", dest="output_dir", default=os.getcwd(), help="The output directory to write commands to ")
 	# Qiime 1.7 --qiime17
 	parser.add_argument("--qiime17", dest="qiime17", default="/media/nfs_opt/qiime17/activate.sh", help="The path to the Qiime 1.7 activate.sh or alias")
 	# Qiime 1.8 --qiime18
@@ -151,6 +153,17 @@ def main():
 	tre_file =  args.tre
 	qiime18_source =  args.qiime18
 	qiime17_source = args.qiime17 
+	commands =  args.commands
+
+	valid_params = """
+summarize_taxa:level 2,3,4,5,6,7
+plot_taxa_summary:labels Phylum,Class,Order,Family,Genus,Species
+alpha_diversity:metrics shannon,simpson,PD_whole_tree,chao1,observed_species
+multiple_rarefactions:min 100
+multiple_rarefactions:max 18000
+multiple_rarefactions:step 500
+beta_diversity_through_plots:seqs_per_sample 18000
+"""
 
 	# Make sure a valid parameters file has been input
 	required_values =['summarize_taxa:level','plot_taxa_summary:labels','alpha_diversity:metrics','multiple_rarefactions:min','multiple_rarefactions:max','multiple_rarefactions:step','beta_diversity_through_plots:seqs_per_sample']
@@ -164,15 +177,7 @@ def main():
 			print required+" not found in parameters file.\n"
 			print valid_params
 			sys.exit()
-	valid_params = """
-summarize_taxa:level 2,3,4,5,6,7
-plot_taxa_summary:labels Phylum,Class,Order,Family,Genus,Species
-alpha_diversity:metrics shannon,simpson,PD_whole_tree,chao1,observed_species
-multiple_rarefactions:min 100
-multiple_rarefactions:max 18000
-multiple_rarefactions:step 500
-beta_diversity_through_plots:seqs_per_sample 18000
-"""
+
 
 	# Read the mapping file into a dictionary
 	# The key is the column header (category)
@@ -206,41 +211,66 @@ beta_diversity_through_plots:seqs_per_sample 18000
 		print "Path:\t{}".format(qiime17_source)
 
 	# Command lists
-	# Qiime18
-	with open('qiime18.sh', 'w') as qiime18:
-		# Source the enviroment
-		qiime18.write("#!/bin/bash\nsource {};\n".format(qiime18_source))
-		# Biom table summary
-		create_biom_summary(biom_file, qiime18)	
-		# Mkdir Taxa summary <<<<<<<<<<
-		qiime18.write("mkdir taxa_summary/\n")
-		# Taxa summary commands
-		summarize_taxa(biom_file, mapping_file, params_file, categories, qiime18)
-		# Alpha div
-		alpha_diversity(biom_file, mapping_file, params_file, tre_file, qiime18)
-		# Alpha div colated
-		compare_alpha_diversity(mapping_file, categories, qiime18)
-		# Beta diversity
-		beta_diversity(biom_file, mapping_file, tre_file, qiime18)
-		# Comapre categories 
-		compare_beta(mapping_file, categories, qiime18)
-		# Core microbiome
-		qiime18.write("mkdir core_microbiome/\n")
-		compute_core_microbiome(biom_file, mapping_file, categories, qiime18)
-	# Qiime 17
-	with open('qiime17.sh', 'w') as qiime17:
-		# Source the enviroment
-		qiime17.write("#!/bin/bash\nsource {};\n".format(qiime17_source))
-		# OTU Category Sig
-		qiime17_otu_category_sig(biom_file, mapping_file, categories, qiime17)
+	if commands:
+		# Qiime18
+		with open('qiime19.sh'.format(commands), 'w') as qiime18:
+			# Mkdir Taxa summary <<<<<<<<<<
+			qiime18.write("mkdir taxa_summary/\n")
+			# Taxa summary commands
+			summarize_taxa(biom_file, mapping_file, params_file, categories, qiime18)
+			# Alpha div
+			alpha_diversity(biom_file, mapping_file, params_file, tre_file, qiime18)
+			# Alpha div colated
+			compare_alpha_diversity(mapping_file, categories, qiime18)
+			# Beta diversity
+			beta_diversity(biom_file, mapping_file, tre_file, qiime18)
+			# Comapre categories 
+			compare_beta(mapping_file, categories, qiime18)
+			# Core microbiome
+			qiime18.write("mkdir core_microbiome/\n")
+			compute_core_microbiome(biom_file, mapping_file, categories, qiime18)
+		# Qiime 17
+		with open('qiime17.sh'.format(commands), 'w') as qiime17:
+			# Source the enviroment
+			qiime17.write("#!/bin/bash\nsource {};\n".format(qiime17_source))
+			# OTU Category Sig
+			qiime17_otu_category_sig(biom_file, mapping_file, categories, qiime17)
 
 
-	# Run qiime18 commands
-	qiime18_proc = subprocess.Popen("./qiime18.sh", shell=True)
-	qiime18_proc.wait()
-	qiime17_proc = subprocess.Popen("./qiime17.sh", shell=True)
-	qiime17_proc.wait()
+	else:
+		# Qiime18
+		with open('qiime19.sh', 'w') as qiime18:
+			# Source the enviroment
+			qiime18.write("#!/bin/bash\nsource {};\n".format(qiime18_source))
+			# Biom table summary
+			create_biom_summary(biom_file, qiime18)	
+			# Mkdir Taxa summary <<<<<<<<<<
+			qiime18.write("mkdir taxa_summary/\n")
+			# Taxa summary commands
+			summarize_taxa(biom_file, mapping_file, params_file, categories, qiime18)
+			# Alpha div
+			alpha_diversity(biom_file, mapping_file, params_file, tre_file, qiime18)
+			# Alpha div colated
+			compare_alpha_diversity(mapping_file, categories, qiime18)
+			# Beta diversity
+			beta_diversity(biom_file, mapping_file, tre_file, qiime18)
+			# Comapre categories 
+			compare_beta(mapping_file, categories, qiime18)
+			# Core microbiome
+			qiime18.write("mkdir core_microbiome/\n")
+			compute_core_microbiome(biom_file, mapping_file, categories, qiime18)
+		# Qiime 17
+		with open('qiime17.sh', 'w') as qiime17:
+			# Source the enviroment
+			qiime17.write("#!/bin/bash\nsource {};\n".format(qiime17_source))
+			# OTU Category Sig
+			qiime17_otu_category_sig(biom_file, mapping_file, categories, qiime17)
+	
+		# Run qiime18 commands
+		qiime18_proc = subprocess.Popen("./qiime18.sh", shell=True)
+		qiime18_proc.wait()
+		qiime17_proc = subprocess.Popen("./qiime17.sh", shell=True)
+		qiime17_proc.wait()
 
 if __name__ == "__main__":
 	main()
-
