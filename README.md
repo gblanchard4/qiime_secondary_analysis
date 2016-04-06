@@ -2,7 +2,7 @@
 
 This script creates a batch script for our standard Qiime analysis. It is a *very*
 thorough script that runs nearly all possible test. You may need to fine tune
-some parameters such as the compate_beta
+some parameters such as the `compare_beta` iterations 
 ## Help:
 ```
 usage: secondary_analysis.py [-h] -b BIOM -m MAP -p PARAMS -t TRE
