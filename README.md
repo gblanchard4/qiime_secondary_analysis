@@ -1,9 +1,8 @@
 #Qiime Secondary Analysis  
 
-The script expects Qiime 1.7, 1.8, & 1.9 to be installed. 
-I have an alias to each Qiime install's `activate.sh`, these are qiime17, qiime18, and qiime19. 
-You can pass the path to the activate file with the 
-  
+This script creates a batch script for our standard Qiime analysis. It is a *very*
+thorough script that runs nearly all possible test. You may need to fine tune
+some parameters such as the compate_beta
 ## Help:
 ```
 usage: secondary_analysis.py [-h] -b BIOM -m MAP -p PARAMS -t TRE
@@ -23,10 +22,6 @@ optional arguments:
   -c CATEGORIES, --categories CATEGORIES
                         The metadata categories to compute. Must be colon
                         seperated
-  --commands            Just write commands, don't run                        
-  --qiime17 QIIME17     The path to the Qiime 1.7 activate.sh or alias
-  --qiime18 QIIME18     The path to the Qiime 1.8 activate.sh or alias
-  --qiime19 QIIME19     The path to the Qiime 1.9 activate.sh or alias
 ```
 ## Workflow
 The pipeline runs the following steps:  
@@ -51,9 +46,8 @@ The Qiime scripts run are:
 * [`compare_categories.py`](http://qiime.org/scripts/compare_categories.html)
 * [`compute_core_microbiome.py`](http://qiime.org/scripts/compute_core_microbiome.html)
 * `source qiime17_path`
-* [`otu_category_significance.py`](http://qiime.org/1.7.0/scripts/otu_category_significance.html)
+* [`group_significance.py `](http://qiime.org/scripts/group_significance.html)
 
 ## Output:
-Output is written to the current working directory. 
-A batch file for the Qiime 1.7/1.8 commands is created and run. 
-
+Output is written to the current working directory.
+A batch file for the Qiime 1.9 commands is created
